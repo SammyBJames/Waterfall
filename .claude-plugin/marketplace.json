@@ -1,0 +1,12 @@
+{
+  "name": "sam-skills",
+  "owner": { "name": "Sam Bradley" },
+  "description": "Sam's Claude Code skills and agents.",
+  "plugins": [
+    {
+      "name": "devflow",
+      "source": "./",
+      "description": "Plan-first development workflow with adversarial step reviews and a specialist final review panel."
+    }
+  ]
+}

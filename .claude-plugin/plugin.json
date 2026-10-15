@@ -1,0 +1,6 @@
+{
+  "name": "devflow",
+  "description": "Plan-first development workflow: an approved design plan, small implementation steps, adversarial review of every step, and a specialist review panel for the whole change.",
+  "author": { "name": "Sam Bradley", "url": "https://github.com/SammyBJames" },
+  "keywords": ["workflow", "code-review", "planning", "stacked-prs"]
+}
