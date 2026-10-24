@@ -1,14 +1,12 @@
 # Tests
 
-The question is whether the tests would catch the bugs they claim to catch, and whether the important behavior is tested at all.
+Would the tests catch the bugs they claim to, and is the important behavior tested at all? Use the mutation and coverage procedure in the review standards.
 
-- **Mutations.** Use the mutation procedure in the review standards on every new or changed piece of logic. A surviving mutation is a finding.
-- **Coverage map.** For each new or changed branch, error path, boundary and requirement, name the test that covers it. Each gap is a finding with the test you want added: its case, input and expected result.
-- **Assertions.** Tests that pass without checking the outcome. Snapshot tests that would accept any output. Assertions on mocks instead of behavior. Expected values that were computed by the code under test, or were simply wrong.
-- **Realism.** Mocks that hide the behavior under test. Fixtures too small to hit pagination, batching or limits. No test with the real database, file system or protocol where those matter.
-- **Isolation and flakiness.** Tests that depend on order, wall-clock time, sleeps, network, randomness without a seed, or shared global state.
-- **Regression tests.** Every bug fixed in this change should have a test that fails without the fix.
-- **Placement and naming.** Do the tests follow the project's conventions for location, naming and helpers? Do the names describe the behavior they check?
-- **Test code quality.** Duplicated setup that should use an existing helper. Tests so long or clever that a reader can't tell what they check.
+- **Assertions.** Tests that pass without checking the outcome. Snapshot tests that accept any output. Assertions on mocks instead of behavior. Expected values computed by the code under test, or simply wrong.
+- **Realism.** Mocks that hide the behavior under test. Fixtures too small to hit pagination, batching or limits. No test against the real database, file system or protocol where those matter.
+- **Flakiness.** Dependence on test order, wall-clock time, sleeps, the network, unseeded randomness or shared global state.
+- **Regression tests.** A bug fixed in this change without a test that fails without the fix.
+- **Over-testing.** Tests that repeat each other with trivially different inputs, test the framework instead of the change, or pin implementation details so any refactor breaks them.
+- **Conventions.** Location, naming and helpers that don't follow the project's. Names that don't say what the test checks. Duplicated setup that an existing helper covers.
 
-Test vectors for standards (RFCs, crypto, encodings) must come from the standard itself, not from memory.
+Test vectors for standards (RFCs, crypto, encodings) must come from the standard itself.

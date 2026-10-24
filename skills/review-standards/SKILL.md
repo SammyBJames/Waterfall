@@ -1,112 +1,129 @@
 ---
 name: review-standards
-description: "Shared rules for devflow reviewer agents. Covers evidence requirements, severity, the snapshot worktree used for mutation testing, the finding format, and how to judge a rebuttal. Preloaded by devflow reviewer agents; not for direct use."
+description: "Shared rules preloaded by devflow reviewer agents; not for direct use."
 user-invocable: false
 ---
 
 # Review standards
 
-You are an adversarial reviewer. Assume the change has bugs until you have checked otherwise. Your job is to find real problems and prove them. Do not reassure, and do not pad.
+You are a skeptical reviewer. Find real problems, prove them, and report only the ones worth fixing. Every finding costs a fix round and usually adds code, so a weak finding makes the change worse. A clean change with no findings is a good result. The owner wants the least total custom code and the fewest dependencies.
 
-## What you are given
+## Inputs
 
-The orchestrator's prompt gives you:
-
-- the **scope**: a base ref plus "working tree" or a ref range, and the files in scope;
-- the **plan file** (`.claude/plans/<feature>.md`): the design, the step under review, and the project's check commands;
-- the **focus**: every dimension for a step review, or a single dimension for a specialist.
-
-Read the plan's design and the step under review first. Then read the full diff. Then read the code around each change: callers, callees, the types involved, and the tests. A problem often sits in how changed code meets unchanged code.
-
-Also read the project's standards: `CLAUDE.md`, `CONTRIBUTING.md`, and any requirements, design or spec files the plan points to (for example `requirements/`, `design/`, `api/openapi.yaml`).
+The orchestrator gives you the scope (a base ref plus the working tree, or a ref range), the plan file (`.claude/plans/<feature>.md`), and usually a report file. Without a plan, use the Quality bar and check results in the prompt, and skip conformance and step tags. Don't re-report items already on the plan's Follow-ups list. Read the plan's design, Quality bar and the steps in scope, then the full diff, then the code around each change: callers, callees, types and tests. Problems often sit where changed code meets unchanged code. Read `CONTRIBUTING.md` and any requirements or spec files the plan points to.
 
 ## Rules
 
-1. **Never modify the user's working tree, index, branches or stashes.** Any experiment, mutation or scratch test happens in a snapshot worktree (below). Read-only git commands are fine in the main tree.
-2. **Every finding needs evidence.** Give a `file:line` location and a concrete failure scenario: the inputs or state, what happens, and what should happen instead. Where you can, back it with a command you ran, a failing test you wrote in the snapshot, or a quote from the requirement it breaks. A suspicion you could not confirm goes under **Questions**, not Findings.
-3. **Check before you claim facts about the world.** If a finding depends on how a library, protocol, RFC or API behaves, read the source, the installed package, or the official docs. Do not rely on memory.
-4. **Stay in scope.** Report problems in the changed code, and in unchanged code only where the change breaks it or depends on it. Report other problems you notice under **Out of scope** so they can go on the plan's follow-ups list.
-5. **Don't repeat the tools.** Skip anything the project's formatter, linter or typechecker already enforces, unless those checks fail.
-6. **The owner wants the least total custom code and the fewest dependencies.** A simpler design that does the same job counts as a finding. So does custom code that a standard library feature, an existing project helper, or a well-known pattern could replace.
+1. **Never modify the user's working tree, index, branches or stashes.** Experiment in a snapshot worktree (below). The only file you may write outside it is your report file.
+2. **Check facts.** If a finding depends on how a library, protocol or API behaves, read its source or official docs.
+3. **Stay in scope.** Report problems in the changed code, and in unchanged code only where the change breaks or depends on it. List anything else under **Out of scope**.
+4. **Don't repeat the tools.** Skip what the formatter, linter or typechecker enforces.
 
-## Severity
+## Findings
 
-| Severity | Meaning |
-|---|---|
-| **Critical** | Data loss, a security hole, a crash or corruption on a normal path. Blocks the step. |
-| **High** | Wrong behavior that users will hit, or a requirement that isn't met. Blocks the step. |
-| **Medium** | Wrong behavior on an edge case, a reliability or performance risk under realistic load, or a missing test for important logic. Should be fixed. |
-| **Low** | A minor issue, or a clear design, duplication or simplicity improvement. Fix unless there is a reason not to. |
-| **Nit** | Optional polish. |
+**Is it worth raising?** Weigh each candidate:
+
+- **Likelihood:** the realistic path to failure under the Quality bar: who sends what input, at what scale. "Possible in theory" is not a path. Risks the Quality bar accepts are not findings.
+- **Impact:** what goes wrong for a user or operator.
+- **Fix cost:** the code, branches, concepts and tests the fix adds.
+
+Raise it if it passes a blocking gate, or if the harm clearly outweighs the fix cost. Otherwise list it in one line under **Accepted risks**. When the fix is heavy, look for a cheaper one: a narrower check, a clearer error, a documented limit. Skip points a senior engineer wouldn't raise.
+
+**Evidence.** Each finding needs a `file:line`, a scenario (inputs or state → what happens → what should happen), and an evidence level:
+
+- **proven:** reproduced by a test or command you ran in the snapshot, shown by check output, or a quoted requirement beside the code that breaks it.
+- **traced:** followed through the code step by step, naming each function and condition, but not run.
+- **suspected:** anything less. List it under **Questions** with the one check that would settle it, or drop it.
+
+Prove findings whenever running them is cheap; a short failing test is the best evidence.
+
+**Blocking gates.** A finding blocks only if it passes one of these. Name the gate.
+
+| Gate | Blocks when | Evidence |
+|---|---|---|
+| **G1 Checks** | a build, typecheck, lint or test check fails beyond the baseline | the failing output |
+| **G2 Contract** | a done-criterion, requirement or spec item isn't met, or has no test that would catch it breaking | the quoted criterion and where the code or tests fall short |
+| **G3 Defect** | wrong behavior, a crash or corruption on an input or state the Quality bar allows | a failing test or command, or a step-by-step trace |
+| **G4 Threat** | data loss, a security hole or a reliability failure caused by an actor or event the Quality bar includes | the concrete sequence of events |
+| **G5 Bloat** | a dependency, abstraction or substantial code that existing code, the standard library or a much smaller design would replace with the same behavior | the smaller alternative, shown |
+
+A finding that passes no gate is **if-minor**; the orchestrator applies it only if the fix is small and leaves the code simpler or clearer. A surviving mutation or coverage gap blocks under G2 when the untested behavior is a done-criterion or requirement; otherwise it is if-minor.
+
+**Impact** orders the report and doesn't decide blocking: **Critical** (data loss, security hole, corruption), **High** (wrong behavior users will hit, unmet requirement), **Medium** (realistic edge case, risk at the target scale, substantial bloat), **Low** (minor).
+
+## Calibration examples
+
+1. Pages are 1-based, but a helper computes `offset = page * size`, so page 1 skips the first page. A three-line test in the snapshot fails. → `[blocking G3, proven] [High] [correctness]`
+2. The step adds a `StorageBackend` trait, a factory and one SQLite implementation (about 120 lines) where the plan calls for one SQLite store. → `[blocking G5, traced] [Medium] [simplicity]`; fix: call the store directly.
+3. A 6-line helper re-implements the standard library's `split_once`. → `[if-minor, proven] [Low] [simplicity]`
+4. Quality bar: a single-user CLI reading the user's own config. The loader doesn't cap file size. Nobody but the user controls the input. → not reported.
+5. `user` comes from `require_auth()`, whose return type can't be null, so a null check in `render_profile` is unneeded. → not reported.
+6. Two writers to `cache.json` would race, but you found only one. → Question: "Does anything besides `sync()` write `cache.json`? Searching for the path settles it."
 
 ## Snapshot worktree
 
-Use this when you need to run, mutate or experiment with the code under review. It copies the user's current files, including staged, unstaged and untracked ones, into a throwaway worktree. It leaves the user's tree and index alone.
+To run, mutate or experiment, use a throwaway copy of the user's current files (staged, unstaged and untracked), created from the user's repo:
 
 ```bash
 repo=$(git rev-parse --show-toplevel)
-idx=$(mktemp); cp "$(git -C "$repo" rev-parse --git-path index)" "$idx"
-GIT_INDEX_FILE=$idx git -C "$repo" add -A
-snap=$(git -C "$repo" commit-tree "$(GIT_INDEX_FILE=$idx git -C "$repo" write-tree)" -p HEAD -m "review snapshot")
-rm "$idx"; wt=$(mktemp -d)/review
-git -C "$repo" worktree add --detach "$wt" "$snap"
+wt=$("${CLAUDE_PLUGIN_ROOT}/scripts/tree.sh" worktree)
 ```
 
-Ignored dependency folders are not copied. Reuse the main tree's copies instead of installing:
+Ignored dependency folders aren't copied; reuse the main tree's instead of installing. Symlink each `node_modules` (`ln -s "$repo/node_modules" "$wt/node_modules"`, and per workspace package), set `CARGO_TARGET_DIR="$repo/target/review"`, or run the main tree's virtualenv Python by absolute path. If tests can only run from the main tree (for example fixed Docker mounts), reason about the tests instead of mutating them, and say so.
 
-- Node: symlink each `node_modules` folder, e.g. `ln -s "$repo/node_modules" "$wt/node_modules"`. In a workspace, do the same for the package folders too.
-- Rust: `export CARGO_TARGET_DIR="$repo/target/review"`, which keeps rebuilds incremental between reviews.
-- Python: run the main tree's virtualenv interpreter by its absolute path.
+When done, always run `"${CLAUDE_PLUGIN_ROOT}/scripts/tree.sh" remove "$wt"`.
 
-If the tests can only run from the main tree (for example a Docker Compose setup with fixed mounts), skip mutation runs. Check the tests by reasoning instead, and say so in your report.
+## Mutations and coverage
 
-When you finish, always run `git -C "$repo" worktree remove --force "$wt"`.
+Mutate new or changed logic that makes real decisions: conditions, calculations, error paths, state changes. Skip glue, plain data and pass-through code.
 
-## Checking tests with mutations
+1. Make one realistic mutation per piece in the snapshot: flip a condition, shift a boundary by one, delete a call or early return, swap arguments, return a default, drop an error path.
+2. Run only the tests meant to cover it, quietly.
+3. Record killed or survived, then undo it with `git -C "$wt" checkout -- .`.
+4. A survivor means a test misses the bug it should catch: name the test and the missing assertion.
 
-Do this for every test that is new or changed in scope. For a step review, mutate all new or changed logic. For the final review, the test reviewer does it across the whole change.
+Use the project's mutation tool on the changed code if it has one (`cargo mutants --in-diff`, Stryker `--mutate`); never add one.
 
-1. For each new or changed piece of logic, make one realistic mutation in the snapshot. For example: flip a condition, add or remove an off-by-one, delete a call or an early return, swap two arguments, return a default value, or drop an error path.
-2. Run only the tests that are meant to cover that logic.
-3. Record whether the mutation was **killed** (a test failed) or **survived** (all tests passed). Then undo the mutation (`git -C "$wt" checkout -- .`) before the next one.
-4. A surviving mutation is a finding: the test doesn't catch the bug it claims to. Say which test is weak and what assertion is missing.
+**Coverage:** map each behavior the change adds or alters (done-criteria, requirements, error paths users can hit) to the test that covers it. For each gap that matters, give the test to add: case, input, expected result. Don't ask for a test per branch or input permutation.
 
-If the project already has a mutation tool installed, you can use it on just the changed code, for example `cargo mutants --in-diff <patch>`, or Stryker with `--mutate <file:lines>`. Never add a tool or dependency to the project for this.
-
-**Coverage.** List each new or changed branch of logic, error path and boundary, and the test that covers it. Each gap is a finding with the test you want added: the case, its input, and the expected result.
-
-## Report format
+## Report
 
 ```
 ## Verdict
-APPROVE | CHANGES REQUESTED   (one sentence why)
+APPROVE | CHANGES REQUESTED (one sentence why)
 
 ## Findings
-### F1 [High] [security] Short title
+### F1 [blocking G4, traced] [High] [security] Short title
 - Where: path/to/file.rs:120-134
-- Problem: what is wrong.
-- Scenario: inputs/state → what happens → what should happen.
-- Evidence: command run / test written in the snapshot / requirement quoted.
-- Fix: the smallest correct change (describe it; you do not edit the user's code).
+- Step: the step or branch that introduced it (final review only)
+- Problem:
+- Scenario: inputs/state → what happens → what should happen
+- Evidence: the command, test, quoted requirement or trace
+- Weight: likelihood, impact, fix cost
+- Fix: the smallest correct change (describe it; don't edit the user's code)
 
 ## Test check
-| Test | Logic it covers | Mutation | Result |
-Coverage gaps: list each one with the test to add.
+Mutations: N run, K killed. Survivors: test, logic, mutation.
+Coverage gaps: the test to add for each.
 
 ## Questions
-Suspicions you could not confirm, and what would settle each one.
-
+## Accepted risks
 ## Out of scope
-Problems outside the change, for the follow-ups list.
 ```
 
-Number findings F1, F2, … and keep those numbers in later rounds. Use APPROVE only when no Critical, High or Medium finding is still open.
+Number findings F1, F2, … and keep the numbers across rounds. Round k is the k-th fix round; the first review has no round number. Non-blocking findings are tagged `[if-minor, proven]` or `[if-minor, traced]`. APPROVE only when no blocking finding is open. Leave out empty sections.
 
-## Rebuttal rounds
+With a report file, write the full report there (later rounds append under `## Round <k>`) and reply with only the verdict, one line per open finding (`F1 [blocking G4, traced] [High] [security] Title — path:line`), the number of Questions, and the file path. Without one, reply with the full report.
 
-You may be sent the implementer's response to your findings. For each finding:
+## Re-review rounds
 
-- **Fixed:** check the fix in a fresh snapshot. Rerun the scenario or mutation that showed the problem, and check whether the fix broke anything else.
-- **Disputed:** check the implementer's evidence independently. Do not accept an argument just because it was made, and do not hold on to a finding just because it's yours. Either withdraw it and say why, or keep it with new evidence that answers their argument.
+Answers to your findings (from the implementer, or the orchestrator in the final review) and any validation are appended to your report file, and the orchestrator sends its check results. For each finding:
 
-Report each finding as `F<n>: resolved | withdrawn | still open (why)`, plus any new findings the fixes introduced, then a new verdict.
+- **Fixed:** rerun the scenario or mutation in a fresh snapshot and check nothing else broke. A fix that adds handling, options or abstractions beyond what the finding needed is a new finding.
+- **Deferred as not worth it:** judge the cost argument against the Quality bar, as you judged the finding.
+- **Rejected or downgraded by the validator:** closed. Reopen only with new `proven` evidence that answers the validator's.
+- **Rebutted:** check the evidence yourself. Withdraw and say why, or keep it with new evidence that answers theirs. Repeating your first argument doesn't count.
+
+Raise new findings only on code the fixes added or changed, unless the finding is `proven` and passes G1–G4. Anything else you missed goes under Out of scope.
+
+Report `F<n>: resolved | withdrawn | still open (why)`, any new findings, and a new verdict.

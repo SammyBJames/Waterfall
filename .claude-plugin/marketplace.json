@@ -6,7 +6,7 @@
     {
       "name": "devflow",
       "source": "./",
-      "description": "Plan-first development workflow with adversarial step reviews and a specialist final review panel."
+      "description": "Plan-first development workflow with proportionate step reviews and a specialist final review panel."
     }
   ]
 }

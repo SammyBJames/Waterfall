@@ -6,39 +6,42 @@ Trunk: <branch>    Stack base: <branch>
 Task: <the user's request, verbatim>
 
 ## Context
-What exists today, and the relevant requirements, design docs and spec sections (with paths). Keep it short.
+What exists today, and the relevant requirements, design docs and spec sections, with paths.
 
 ## Design
-The approach and how the parts fit together: data model, interfaces and API shape, data flow, and error handling. Include what is deliberately left out. Point to existing code that will be reused.
+The approach: data model, interfaces and API shape, data flow, error handling, existing code to reuse, and what is deliberately left out.
+
+## Quality bar
+Every finding and fix is judged against this section.
+- Users and environment: who runs this and where.
+- Threat model: who can send input, and what is trusted.
+- Target scale: data sizes, request rates, devices.
+- Accepted risks: failure modes this change won't handle, and why.
 
 ## Decisions
 | # | Decision | Chosen | Why | By |
 |---|---|---|---|---|
-| D1 | | | | user / orchestrator |
-
-Disputes the orchestrator settled after the round limit go here too, marked "dispute".
+| D1 | | | | user / orchestrator / dispute |
 
 ## Project checks
-| Check | Command | Baseline |
+| Check | Command (quiet form) | Baseline |
 |---|---|---|
 | build | | pass |
-| test | | pass, or the failures that already existed |
+| test | | pass, or the existing failures |
 
 ## Steps
 
 ### [ ] 1. <title>
-- Branch: <name> (commit mode)
-- Goal: what this step delivers, in one or two sentences.
-- Files: the main files or modules expected to change.
-- Tests: what to test, including edge cases and failure paths.
-- Docs and spec: what to update, if anything.
-- Done when: criteria someone else could check.
-- Record: (filled in as the step runs) commit or hand-off snapshot SHA, review rounds, disputes, deviations.
-
-### [ ] 2. ...
+- Branch: <name> (in review mode, the user's branch, recorded after they commit)
+- Review: full | light (why)
+- Goal: what the step delivers, in a sentence or two.
+- Files: the main files or modules it changes.
+- Docs and spec: updates, if any.
+- Done when: `criterion → test name or command`, one per line. For a criterion only a person can check, say how.
+- Record: commit or hand-off SHA; tier as run; rounds; blocking findings by gate and outcome (fixed, withdrawn, rejected or downgraded by the validator, deferred, settled); if-minor applied and skipped; mutations killed/survived; escalations; escapes found later; disputes; deviations.
 
 ## Follow-ups
-Out-of-scope problems found along the way, each with where it is and why it matters. The final review handles them or passes them to the user.
+Out-of-scope problems found along the way: where, and why it matters.
 
 ## Final design
-(Written at the end.) The design as built, the important details, differences from the approved design, and how to test the whole change end to end.
+Written at the end: the design as built, differences from the approved design, and how to test the whole change end to end.

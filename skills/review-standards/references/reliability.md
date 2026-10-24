@@ -1,14 +1,19 @@
 # Reliability
 
-Ask what happens when things go wrong, partly wrong, or slowly.
+Ask what happens when things fail, partly fail, or run slowly, in the environment the Quality bar describes.
 
-- **Partial failure.** Multi-step writes that can stop halfway. Are they in a transaction, idempotent, or resumable? Files written in place instead of to a temp file plus rename. Caches and the database drifting apart.
-- **Retries and idempotency.** Retried requests or messages applied twice. Missing idempotency keys or dedup. Retry loops without backoff, jitter or a cap.
-- **Concurrency.** Data races. Locks held across `await` or I/O. Lock order that can deadlock. Poisoned mutexes. Blocking calls on async runtimes (use `spawn_blocking` or similar). Unbounded queues or channels. Tasks and timers that outlive their owner.
-- **Resources.** File handles, connections, child processes, subscriptions and listeners that aren't released on every path. Memory or disk that grows without bound (logs, caches, temp files, history tables).
-- **Timeouts and cancellation.** Network or IPC calls without timeouts. Cancelled work that leaves inconsistent state. Shutdown that drops in-flight work.
-- **Restart and upgrade.** Does state survive a restart? Do migrations run safely on existing data, and are they ordered and repeatable? Is there a sensible path forward when old clients or old data meet new code?
-- **Errors and visibility.** Panics or unchecked unwraps on paths that can fail. Errors swallowed so failures are silent. When something breaks, is there enough logging to see what and where, without logging secrets or personal data?
-- **Mobile and network.** Network changes, background limits, process death, reconnects that duplicate or lose messages, and offline queues.
+- **Partial failure.** Multi-step writes that can stop halfway without a transaction, idempotency or resume. Files written in place instead of temp file plus rename. Caches drifting from the database.
+- **Retries.** Retried requests or messages applied twice where retries actually happen.
+- **Concurrency.** Data races. Locks held across `await` or I/O. Lock orders that can deadlock. Blocking calls on async runtimes. Tasks and timers that outlive their owner.
+- **Resources.** Handles, connections, child processes and listeners not released on every path. Logs, caches, temp files or tables that grow without bound.
+- **Restart and upgrade.** State lost on restart. Migrations that are unsafe on existing data, out of order, or not repeatable. Old clients or data meeting new code.
+- **Errors and visibility.** Panics or unchecked unwraps on fallible paths. Swallowed errors that make failures silent. Too little logging to see what broke, or logging of secrets or personal data.
+
+**Not reported unless the Quality bar makes it a concrete risk:**
+
+- timeouts, backoff, jitter and retry caps on calls to local or trusted components;
+- bounds on queues, channels and caches whose size the code controls;
+- network changes, background limits, process death and offline queues outside mobile or flaky-network targets;
+- graceful shutdown of work that is safe to lose or redo.
 
 Back each finding with the sequence of events that triggers it.

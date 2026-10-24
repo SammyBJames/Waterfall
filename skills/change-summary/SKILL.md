@@ -1,30 +1,36 @@
 ---
 name: change-summary
-description: "Summarize a code change for review: a high-level overview of how the changed parts work, a brief PR description (What Changed / What to Test), and a suggested one-line commit message that matches the repository's history. Use when asked for a change summary, PR description, or commit message, and at each devflow hand-off."
+description: "Summarizes a code change for review: how it works, a PR description (What Changed / What to Test), and a one-line commit message in the repo's style. Use when asked for a change summary, PR description or commit message."
 argument-hint: "[base-ref]"
+context: fork
+model: sonnet
+effort: medium
+background: false
 ---
 
 # Change summary
 
-**Scope:** the working tree compared with `HEAD` (staged, unstaged and untracked files). If a base ref is given, use `<ref>...` plus the working tree instead.
+Arguments: $ARGUMENTS
 
-Read the whole diff and enough surrounding code to explain how the changed parts work. If there's a devflow plan (`.claude/plans/*.md`) for this change, use its design, step and decisions for the "why", and link any issues it names.
+Scope: the working tree vs `HEAD` (staged, unstaged and untracked), or `<ref>...` plus the working tree if a base ref is given. Read the whole diff and enough surrounding code to explain it. If a devflow plan in `.claude/plans/` covers the change, use its design and decisions for the "why" and link any issues it names.
 
-Print the summary in exactly three sections:
+For the commit message, read `git log --format=%s -30` and match the history's mood, capitalization, prefixes and length. Write one line under about 72 characters saying what the change does for the project.
+
+Reply with exactly these three sections and nothing else, readable in under two minutes:
 
 ````markdown
 ## How it works
-A short, high-level explanation for someone reviewing the change. Describe the moving parts and how they fit together: the main types, functions or modules, the data flow, and new concepts with their names. Point to `file:line` for the parts worth reading first. Explain any decision a reviewer might question. Mention what was deliberately left out. Aim for a few short paragraphs or a compact list, not a file-by-file tour.
+A few short paragraphs or a compact list: the main types, functions or modules, how data flows, and new concepts by name. Point to `file:line` for what to read first. Explain decisions a reviewer might question, and what was left out. Not a file-by-file tour.
 
 ## PR description
 ```markdown
 ### What Changed
-- What changed in behavior, and why, in a few bullets.
+- Behavior changes and why, in a few bullets.
 - Issues: #123 (only if known)
 
 ### What to Test
-- [ ] Concrete steps a person can follow, with the expected result for each: commands to run, pages or screens to open, inputs to try, including at least one edge case or failure path.
-- [ ] Automated: the test command(s) and what they now cover.
+- [ ] Steps a person can follow, each with its expected result, including at least one edge case or failure path.
+- [ ] Automated: the test commands and what they now cover.
 ```
 
 ## Commit message
@@ -32,9 +38,3 @@ A short, high-level explanation for someone reviewing the change. Describe the m
 <one line>
 ```
 ````
-
-## Commit message
-
-First read `git log --format=%s -30` and match the repository's style: tense or mood ("Add" or "Added"), capitalization, prefixes such as conventional-commit types or scopes if the history uses them, and typical length. Write one line under about 72 characters that says what the change does for the project, not how. No trailing period unless the history uses one.
-
-Keep the whole summary brief. A reviewer should be able to read it in under two minutes.
