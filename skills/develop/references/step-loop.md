@@ -9,7 +9,7 @@ Do the steps in order and update the plan after each stage. `"${CLAUDE_PLUGIN_RO
 
 ## 2. Implement
 
-Launch `devflow:implementer` with the plan path, step number, scope (working tree vs `HEAD`) and any notes from earlier steps. Keep its ID.
+Launch `waterfall:implementer` with the plan path, step number, scope (working tree vs `HEAD`) and any notes from earlier steps. Keep its ID.
 
 - **BLOCKED:** recommend an option, get the user's approval, update the plan, then continue the implementer, or start a fresh one if the step changed a lot.
 - **DONE:** run the checks yourself and compare with the baseline. Send failures back.
@@ -18,7 +18,7 @@ Launch `devflow:implementer` with the plan path, step number, scope (working tre
 
 ## 3. Review
 
-Take the fingerprint. Launch `devflow:reviewer` with the plan path and step, the scope and changed files, the review tier, your check results (what passed, and the output of failures beyond the baseline), and the report file `.claude/plans/<feature>/step-<n>-review.md`. Keep its ID. When it returns, compare the fingerprint; if the tree changed, undo only the reviewer's changes and tell the user.
+Take the fingerprint. Launch `waterfall:reviewer` with the plan path and step, the scope and changed files, the review tier, your check results (what passed, and the output of failures beyond the baseline), and the report file `.claude/plans/<feature>/step-<n>-review.md`. Keep its ID. When it returns, compare the fingerprint; if the tree changed, undo only the reviewer's changes and tell the user.
 
 The reviewer, implementer and validator all append to the report file.
 
@@ -28,7 +28,7 @@ Then loop, for at most 3 rounds:
 
 1. If the verdict is APPROVE, stop.
 2. Answer the reviewer's Questions yourself (read the code or ask the implementer), and add confirmed ones to the report file as findings.
-3. Send blocking findings that are `traced` and not yet validated to a `devflow:validator`, with the plan path, report file, round and finding numbers. Confirmed ones stay blocking, downgraded ones become if-minor or accepted risks, and rejected ones close. If no blocking finding remains, stop.
+3. Send blocking findings that are `traced` and not yet validated to a `waterfall:validator`, with the plan path, report file, round and finding numbers. Confirmed ones stay blocking, downgraded ones become if-minor or accepted risks, and rejected ones close. If no blocking finding remains, stop.
 4. SendMessage the implementer the round, the report file, and the findings to answer: every open blocking finding plus the if-minor ones you chose.
 5. Run the checks.
 6. SendMessage the reviewer the round and the check results, and ask it to re-review from the file.

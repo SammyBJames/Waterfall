@@ -12,7 +12,7 @@ background: false
 
 Arguments: $ARGUMENTS
 
-Scope: the working tree vs `HEAD` (staged, unstaged and untracked), or `<ref>...` plus the working tree if a base ref is given. Read the whole diff and enough surrounding code to explain it. If a devflow plan in `.claude/plans/` covers the change, use its design and decisions for the "why" and link any issues it names.
+Scope: the working tree vs `HEAD` (staged, unstaged and untracked), or `<ref>...` plus the working tree if a base ref is given. Read the whole diff and enough surrounding code to explain it. If a Waterfall plan in `.claude/plans/` covers the change, use its design and decisions for the "why" and link any issues it names.
 
 For the commit message, read `git log --format=%s -30` and match the history's mood, capitalization, prefixes and length. Write one line under about 72 characters saying what the change does for the project.
 

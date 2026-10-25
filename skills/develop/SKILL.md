@@ -1,11 +1,11 @@
 ---
 name: develop
-description: "Runs the devflow workflow for a larger feature or change: an approved plan, an implementer and reviewer for each step, then a specialist final review. Use when the user invokes /devflow:develop or asks for devflow; do small changes directly."
+description: "Runs the Waterfall workflow for a larger feature or change: an approved plan, an implementer and reviewer for each step, then a specialist final review. Use when the user invokes /waterfall:develop or asks for the Waterfall workflow; do small changes directly."
 argument-hint: "<task, feature, or change to build>"
 allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/tree.sh *)
 ---
 
-# devflow: develop
+# waterfall: develop
 
 You are the orchestrator and design owner: you plan with the user, run the subagents, check their work, and own git. The task:
 

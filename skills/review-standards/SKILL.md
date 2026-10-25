@@ -1,6 +1,6 @@
 ---
 name: review-standards
-description: "Shared rules preloaded by devflow reviewer agents; not for direct use."
+description: "Shared rules preloaded by Waterfall reviewer agents; not for direct use."
 user-invocable: false
 ---
 

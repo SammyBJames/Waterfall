@@ -1,6 +1,6 @@
 ---
 name: comment-cleanup
-description: "Cleans up comments in changed code: a doc comment on every function, inline comments only where the code can't explain itself, and no history. Use when asked to tidy comments or docs, and for devflow's comment pass."
+description: "Cleans up comments in changed code: a doc comment on every function, inline comments only where the code can't explain itself, and no history. Use when asked to tidy comments or docs, and for Waterfall's comment pass."
 argument-hint: "[base-ref | files...]"
 context: fork
 model: sonnet

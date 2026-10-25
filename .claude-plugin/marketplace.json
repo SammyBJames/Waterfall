@@ -4,7 +4,7 @@
   "description": "Sam's Claude Code skills and agents.",
   "plugins": [
     {
-      "name": "devflow",
+      "name": "waterfall",
       "source": "./",
       "description": "Plan-first development workflow with proportionate step reviews and a specialist final review panel."
     }

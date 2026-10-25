@@ -8,13 +8,13 @@ Choose specialists by what the diff touches; when in doubt, include one.
 
 | Specialist | Run it when the change… |
 |---|---|
-| `devflow:correctness-reviewer` | always |
-| `devflow:simplicity-reviewer` | always |
-| `devflow:security-reviewer` | handles outside input, auth, sessions or secrets; builds paths, shell commands, queries or URLs; or crosses a sandbox or plugin boundary |
-| `devflow:reliability-reviewer` | writes persistent state, runs concurrent or background work, uses the network or IPC, or adds migrations |
-| `devflow:performance-reviewer` | touches queries, loops over growing data, hot request or render paths, or large payloads, at a scale where cost matters |
-| `devflow:tests-reviewer` | has two or more full-tier steps that work together, or tests added after the step reviews |
-| `devflow:design-reviewer` | adds modules, layers or public APIs, or departs from the plan's design |
+| `waterfall:correctness-reviewer` | always |
+| `waterfall:simplicity-reviewer` | always |
+| `waterfall:security-reviewer` | handles outside input, auth, sessions or secrets; builds paths, shell commands, queries or URLs; or crosses a sandbox or plugin boundary |
+| `waterfall:reliability-reviewer` | writes persistent state, runs concurrent or background work, uses the network or IPC, or adds migrations |
+| `waterfall:performance-reviewer` | touches queries, loops over growing data, hot request or render paths, or large payloads, at a scale where cost matters |
+| `waterfall:tests-reviewer` | has two or more full-tier steps that work together, or tests added after the step reviews |
+| `waterfall:design-reviewer` | adds modules, layers or public APIs, or departs from the plan's design |
 
 Log skipped specialists and why in the plan. Launch the chosen ones in parallel, in one message, each with the plan path, the scope, each step's branch and commit (to tag findings), the Follow-ups list (known issues, not to be re-reported), and a report file `.claude/plans/<feature>/final-<specialist>.md`. Keep their IDs, and check the fingerprint when they finish.
 
@@ -28,7 +28,7 @@ Log skipped specialists and why in the plan. Launch the chosen ones in parallel,
 
 ## 3. Fix
 
-Make small fixes yourself. Give larger ones to a `devflow:implementer` as a fix task: the plan path and each report path with its finding numbers, launched with `model: "opus"` when a fix spans several steps or modules. Put each fix on the branch that introduced the problem, lowest branch first (`git.md`); a cross-cutting fix goes on the lowest branch where it fits. Every bug fix gets a regression test. Run the checks on each branch you touch and on the top branch.
+Make small fixes yourself. Give larger ones to a `waterfall:implementer` as a fix task: the plan path and each report path with its finding numbers, launched with `model: "opus"` when a fix spans several steps or modules. Put each fix on the branch that introduced the problem, lowest branch first (`git.md`); a cross-cutting fix goes on the lowest branch where it fits. Every bug fix gets a regression test. Run the checks on each branch you touch and on the top branch.
 
 ## 4. Re-review
 

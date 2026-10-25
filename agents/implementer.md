@@ -1,6 +1,6 @@
 ---
 name: implementer
-description: "devflow implementer: builds one step of an approved plan, then fixes or rebuts reviewer findings with evidence."
+description: "Waterfall implementer: builds one step of an approved plan, then fixes or rebuts reviewer findings with evidence."
 model: sonnet
 effort: medium
 color: green

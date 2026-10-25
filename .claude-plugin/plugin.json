@@ -1,6 +1,15 @@
 {
-  "name": "devflow",
+  "name": "waterfall",
+  "displayName": "Waterfall",
   "description": "Plan-first development workflow: an approved design plan, small implementation steps, a review of every step sized to its risk, and a specialist review panel for the whole change.",
-  "author": { "name": "Sam Bradley", "url": "https://github.com/SammyBJames" },
-  "keywords": ["workflow", "code-review", "planning", "stacked-prs"]
+  "author": {
+    "name": "Sam Bradley",
+    "url": "https://github.com/SammyBJames"
+  },
+  "keywords": [
+    "workflow",
+    "code-review",
+    "planning",
+    "stacked-prs"
+  ]
 }

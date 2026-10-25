@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Snapshot helpers for devflow. They read the user's working tree (tracked,
+# Snapshot helpers for Waterfall. They read the user's working tree (tracked,
 # staged and untracked files, but not ignored ones) without touching its
 # index, branches or stashes. Run them from anywhere inside the user's repo.
 #
@@ -24,22 +24,22 @@ write_tree() {
 
 # Prints a commit of the working tree whose parent is HEAD.
 snapshot() {
-  git -C "$repo" commit-tree "$(write_tree)" -p HEAD -m "devflow snapshot"
+  git -C "$repo" commit-tree "$(write_tree)" -p HEAD -m "Waterfall snapshot"
 }
 
 case "${1:-}" in
   fingerprint) write_tree ;;
   snapshot) snapshot ;;
   worktree)
-    base=$(mktemp -d "${TMPDIR:-/tmp}/devflow-review.XXXXXX")
+    base=$(mktemp -d "${TMPDIR:-/tmp}/waterfall-review.XXXXXX")
     git -C "$repo" worktree add --quiet --detach "$base/review" "$(snapshot)"
     echo "$base/review"
     ;;
   remove)
     wt=${2:?usage: tree.sh remove <path>}
     case "$wt" in
-      */devflow-review.*/review) ;;
-      *) echo "tree.sh: refusing to remove $wt: not a devflow review worktree" >&2; exit 1 ;;
+      */waterfall-review.*/review) ;;
+      *) echo "tree.sh: refusing to remove $wt: not a Waterfall review worktree" >&2; exit 1 ;;
     esac
     git -C "$repo" worktree remove --force "$wt"
     rmdir "$(dirname "$wt")"
