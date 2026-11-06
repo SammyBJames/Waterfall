@@ -1,7 +1,7 @@
 {
-  "name": "sam-skills",
+  "name": "waterfall",
   "owner": { "name": "Sam Bradley" },
-  "description": "Sam's Claude Code skills and agents.",
+  "description": "Waterfall: a plan-first development workflow for Claude Code.",
   "plugins": [
     {
       "name": "waterfall",

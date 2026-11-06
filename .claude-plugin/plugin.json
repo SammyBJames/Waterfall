@@ -2,10 +2,14 @@
   "name": "waterfall",
   "displayName": "Waterfall",
   "description": "Plan-first development workflow: an approved design plan, small implementation steps, a review of every step sized to its risk, and a specialist review panel for the whole change.",
+  "version": "0.1.0",
   "author": {
     "name": "Sam Bradley",
     "url": "https://github.com/SammyBJames"
   },
+  "license": "GPL-3.0-or-later",
+  "homepage": "https://github.com/SammyBJames/Waterfall",
+  "repository": "https://github.com/SammyBJames/Waterfall",
   "keywords": [
     "workflow",
     "code-review",

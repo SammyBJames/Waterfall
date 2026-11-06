@@ -9,6 +9,8 @@ A Claude Code plugin for plan-first development with skeptical, proportionate re
 
 Nothing is ever pushed. `gh stack submit` is yours to run.
 
+Waterfall is opinionated about size: reviewers are told to favour the least total custom code and the fewest dependencies, so expect findings that remove code as often as ones that add it.
+
 ## Commands
 
 | Command | What it does |
@@ -20,18 +22,24 @@ Nothing is ever pushed. `gh stack submit` is yours to run.
 
 ## Install
 
-Requires the GitHub CLI with the [`gh stack`](https://gh.io/stacks) extension for commit mode (`gh extension install github/gh-stack`), and `python3` for the hook that keeps reviewers out of your working tree.
+Requirements:
+
+- macOS or Linux (on Windows, use WSL). The hook and helper scripts are shell and Python scripts.
+- `git` 2.31 or later and `bash`, for the snapshot helpers.
+- `python3`, for the hook that keeps reviewers out of your working tree.
+- For commit mode only: the GitHub CLI with the [`gh stack`](https://gh.io/stacks) extension (`gh extension install github/gh-stack`).
 
 ```bash
-# From a clone; edits apply after /reload-plugins
-claude plugin marketplace add ~/Repositories/Skills
-# Or straight from GitHub, no clone needed
-claude plugin marketplace add <owner>/<repo>
+# Straight from GitHub
+claude plugin marketplace add SammyBJames/Waterfall
+# Or from a local clone, to edit it (changes apply after /reload-plugins)
+git clone https://github.com/SammyBJames/Waterfall.git
+claude plugin marketplace add ./Waterfall
 
-claude plugin install waterfall@sam-skills
+claude plugin install waterfall@waterfall
 ```
 
-To update: `git pull`, or `claude plugin marketplace update sam-skills && claude plugin update waterfall@sam-skills`.
+To update: `claude plugin marketplace update waterfall && claude plugin update waterfall@waterfall`, or `git pull` in a local clone.
 
 ## Layout
 
@@ -39,10 +47,10 @@ To update: `git pull`, or `claude plugin marketplace update sam-skills && claude
 - `skills/review-standards/`: rules every reviewer loads (evidence levels, weighing findings against the Quality bar, blocking gates, calibration examples, snapshot worktree, mutation testing, report format), plus one checklist per review dimension in `references/`, each with what not to report.
 - `skills/comment-cleanup/`, `skills/change-summary/`: run in a forked Sonnet subagent.
 - `agents/`: `implementer`, the step `reviewer`, the `validator`, and seven `*-reviewer` specialists.
-
-Models follow Anthropic's guidance: Opus agents run at `medium` effort (Opus 5.5's default), and the Sonnet implementer and skills at `medium` (recommended for well-specified agentic coding). The orchestrator moves the implementer to Opus when a step proves hard.
 - `scripts/tree.sh`: working-tree fingerprint, snapshot commit, and snapshot worktrees, all without touching your index.
 - `hooks/hooks.json` and `scripts/guard-review-writes.py`: block reviewer and validator agents from editing anything outside their snapshot worktree and report files.
+
+The reviewers and validator run on Opus, and the implementer and the `comment-cleanup` and `change-summary` skills on Sonnet, all at `medium` effort. The orchestrator moves the implementer to Opus when a step proves hard.
 
 ## Tuning
 
@@ -53,3 +61,7 @@ Each step's **Record** line in the plan logs its review tier, rounds, blocking f
 - **Rounds:** many review rounds per step mean the implementer needs a stronger model or clearer steps.
 
 Run `claude plugin validate .` after you make changes.
+
+## License
+
+[GPL-3.0-or-later](LICENSE). You may use, modify and share Waterfall; if you distribute a modified version, you must release its source under the same license.
