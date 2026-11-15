@@ -1,41 +1,57 @@
-# Phase 2: final review
+# Final review
 
-Set the plan's status to `final review`. The scope is `<stack-base>...HEAD`, from the top of the stack. Take a tree fingerprint (`"${CLAUDE_PLUGIN_ROOT}/scripts/tree.sh" fingerprint`).
+You are a batch orchestrator running the final review of a plan with more than one batch. Every batch has had its own panel, and its PRs may be in peer review. So this review looks only for problems that show across batches, and every fix goes forward on a new branch on top of the stack.
+
+Set the plan's status to `final review`. Check what happened to the batches' PRs while they were built (`git.md`, Before a later batch). The scope is `<stack-base>...<top>`. Take a tree fingerprint (`"${CLAUDE_PLUGIN_ROOT}/scripts/tree.sh" fingerprint`).
 
 ## 1. Launch the panel
 
-Choose specialists by what the diff touches; when in doubt, include one.
+Choose specialists by what the batches do together; when in doubt, include one.
 
-| Specialist | Run it when the change… |
+| Specialist | Run it when… |
 |---|---|
 | `waterfall:correctness-reviewer` | always |
 | `waterfall:simplicity-reviewer` | always |
-| `waterfall:security-reviewer` | handles outside input, auth, sessions or secrets; builds paths, shell commands, queries or URLs; or crosses a sandbox or plugin boundary |
-| `waterfall:reliability-reviewer` | writes persistent state, runs concurrent or background work, uses the network or IPC, or adds migrations |
-| `waterfall:performance-reviewer` | touches queries, loops over growing data, hot request or render paths, or large payloads, at a scale where cost matters |
-| `waterfall:tests-reviewer` | has two or more full-tier steps that work together, or tests added after the step reviews |
-| `waterfall:design-reviewer` | adds modules, layers or public APIs, or departs from the plan's design |
+| `waterfall:design-reviewer` | later batches build on earlier batches' modules or contracts |
+| `waterfall:tests-reviewer` | behavior only works when several batches work together |
+| `waterfall:security-reviewer` | a flow that spans batches handles outside input, auth or secrets |
+| `waterfall:reliability-reviewer` | a flow that spans batches writes persistent state or runs concurrently |
+| `waterfall:performance-reviewer` | a flow that spans batches sits on a hot path at the target scale |
 
-Log skipped specialists and why in the plan. Launch the chosen ones in parallel, in one message, each with the plan path, the scope, each step's branch and commit (to tag findings), the Follow-ups list (known issues, not to be re-reported), and a report file `.claude/plans/<feature>/final-<specialist>.md`. Keep their IDs, and check the fingerprint when they finish.
+Log skipped specialists and why in the plan's Final review section. Launch the chosen ones in parallel, in one message, each with:
+
+- the plan path and the scope;
+- each step's batch, branch and commit, to tag findings;
+- the Follow-ups list and the batch panels' reports (`.claude/plans/<feature>/batch-*-<specialist>.md`), which are settled and not to be re-reported;
+- what to look for, which no batch panel could see: requirements met only end to end, contracts used inconsistently across batches, drift from the plan's design, logic duplicated across batches, and gaps in end-to-end tests;
+- a report file, `.claude/plans/<feature>/final-<specialist>.md`.
+
+Keep their IDs, and check the fingerprint when they finish.
 
 ## 2. Validate
 
 1. Merge findings that share a root cause, noting every specialist that raised them.
-2. Send `traced` blocking findings to validators, one per report with its round and finding numbers, all in one message. Rejected ones close; downgraded ones become if-minor or accepted risks.
-3. Mark each remaining finding valid, invalid (rebut with evidence) or deferred (say why). Check proven and confirmed findings' evidence rather than re-deriving it. Apply if-minor findings only when small and simplifying.
-4. Log each valid blocking finding as an escape in the Record of the step that introduced it, noting whether it was within that step's tier.
-5. Decide which Follow-ups belong in this change; any that change the plan need the user's approval.
+2. Send `traced` blocking findings to `waterfall:validator`s, one per report with its round and finding numbers, all in one message. Rejected ones close; downgraded ones become if-minor or accepted risks.
+3. Rule on each remaining finding: valid, invalid (rebut with evidence) or deferred (say why). Check the evidence of proven and confirmed findings instead of re-deriving it. Apply an if-minor finding only when its fix is small and leaves the code simpler.
+4. Log each valid blocking finding in your log (`.claude/plans/<feature>/final-log.md`) as an escape of the step that introduced it and of the batch whose panel missed it.
+5. Decide which Follow-ups belong in this change; any that change the plan are questions.
 
-## 3. Fix
+## 3. Fix forward
 
-Make small fixes yourself. Give larger ones to a `waterfall:implementer` as a fix task: the plan path and each report path with its finding numbers, launched with `model: "opus"` when a fix spans several steps or modules. Put each fix on the branch that introduced the problem, lowest branch first (`git.md`); a cross-cutting fix goes on the lowest branch where it fits. Every bug fix gets a regression test. Run the checks on each branch you touch and on the top branch.
+Put every fix on one new branch at the top of the stack (`git.md`, Fixing forward), named in the repo's pattern or `<feature>/<nn>-final-review-fixes`. Don't change an earlier batch's branch. If the fixes are large or unrelated to each other, ask the main orchestrator whether to split them into a branch each.
+
+Make small fixes yourself. Give larger ones to a fresh `waterfall:implementer`, with `model: "opus"` when a fix spans several modules: the plan path, the briefs of the steps the fixes touch, the checks config and baseline, and each report path with its finding numbers. Every bug fix gets a regression test, and fixes follow the comment rules in the `comment-cleanup` skill. Run `checks.py` once the fixes are in.
 
 ## 4. Re-review
 
-For each specialist with open findings, append your answers to its report file under `## Orchestrator response (round <k>)` as `F<n>: fixed (branch and commit) | rebutted (evidence) | deferred (why)`, then SendMessage it the round. Don't message specialists with nothing open. Repeat validate → fix → re-review for at most 3 rounds. Settle a finding as soon as a round passes with no new evidence, settle the rest after round 3, and log each settled dispute in the plan and the final overview.
+For each specialist with open findings, append your answers to its report file under `## Orchestrator response (round <k>)` as `F<n>: fixed (commit) | rebutted (evidence) | deferred (why)`, then SendMessage it the round. Repeat validate → fix → re-review for at most 5 rounds, counted from those sections in the report files, not from memory. Settle a finding as soon as a round passes with no new evidence, and settle the rest after round 5. Log each settled dispute in the plan's Decisions.
 
-If the fixes added code, SendMessage the simplicity reviewer the fixes (the commits, or the diff in review mode) to check that each is the smallest fix for its finding, then run one validate → fix round on what it reports.
+If the fixes added code, SendMessage the simplicity reviewer the fixes to check that each is the smallest fix for its finding, then run one validate → fix round on what it reports.
 
 ## 5. Docs and specs
 
-Bring the README, design docs, requirements status and API spec in line with what was built, each update on the branch whose step introduced the behavior. Then do the Finish phase in `SKILL.md`.
+On the fix branch, bring the README, design docs, requirements status and API spec in line with anything the batch reviews couldn't cover alone, such as an overview of the whole feature.
+
+## 6. Draft PR and report
+
+If there is a fix branch, open its draft PR (`draft-prs.md`), with a body that says which earlier PR each fix belongs to. Record the review in the plan's Final review section, then send the main orchestrator your report.

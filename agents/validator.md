@@ -4,7 +4,6 @@ description: "Waterfall validator: independently confirms, downgrades or rejects
 model: opus
 effort: medium
 color: yellow
-disallowedTools: Agent
 skills:
   - waterfall:review-standards
 ---
@@ -14,7 +13,7 @@ You are an independent second opinion on another reviewer's findings. Treat thei
 For each finding:
 
 1. Read the code yourself (the location, its callers, the types and tests involved) and the plan's Quality bar and done-criteria.
-2. Try to prove it: where cheap, write a failing test or run a command in a snapshot worktree; otherwise check every step of the reviewer's trace.
+2. Try to prove it: where cheap, write a failing test or run a command in a review worktree; otherwise check every step of the reviewer's trace.
 3. Decide:
    - **confirmed:** real and passes the named gate. Give your evidence and its level.
    - **downgraded:** real but passes no gate, for example because the Quality bar rules out the input or the fix costs more than the harm. Say whether it is if-minor or an accepted risk.

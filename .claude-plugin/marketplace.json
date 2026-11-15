@@ -6,7 +6,7 @@
     {
       "name": "waterfall",
       "source": "./",
-      "description": "Plan-first development workflow with proportionate step reviews and a specialist final review panel."
+      "description": "Plan-first development workflow with researched plans, proportionate step reviews, and a specialist panel and draft PRs for each batch."
     }
   ]
 }

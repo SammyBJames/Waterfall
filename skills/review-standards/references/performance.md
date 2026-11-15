@@ -11,4 +11,4 @@ Judge costs at the Quality bar's target scale, with realistic data rather than t
 
 **Not reported unless the cost is concrete at the target scale:** quadratic work on small capped lists, one-off startup queries, micro-optimizations off the hot path, and caching, batching or streaming with no measured or estimated need.
 
-Estimate the cost: "O(n) queries per page, about 100 per request at the target scale" is a finding; "this might be slow" is a question. Measure in the snapshot when cheap.
+Estimate the cost: "O(n) queries per page, about 100 per request at the target scale" is a finding; "this might be slow" is a question. Measure in a review worktree when cheap.
